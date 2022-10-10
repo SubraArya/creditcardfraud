@@ -408,5 +408,5 @@ having `r cmnb$table[2,1]` False positives and  `r  cmnb$table[1,2]` False negat
 `r  cmknn$table[1,2]`  false negatives .This is the reason for overall accuracy of the   Random forest   the best with 99.93 accuracy compared to Naive Bayes which is an
 under performing algorithm  with 98.08 and then 99.83 for K Nearest  neighbors.
 
-However the performance of the Random forest on high volume datasets can be significantly slow .
+However the performance of the Random forest on high volume datasets can be significantly slow as the number of decision Trees increase and needs further investigation.
 

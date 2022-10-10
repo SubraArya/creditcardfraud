@@ -39,12 +39,14 @@ three models .
 
 confusion matrix measures the following four values:
 
+```{r , EVAL = TRUE}
 
 tab <- matrix(c('True  Negative (TN)', 'False  Negative (FN)', 'False  Positive (FP)', 'True  Positive  (TP)' ), ncol=2, byrow=TRUE)
 colnames(tab) <- c('Actually Negactive(0)','Actually Positive (1)')
 rownames(tab) <- c('Predicted Negative (0)','Predicted Positive (1)')
 tab <- as.table(tab)
 tab
+```
 
 Total number of  True Negative (TN) are the transaction detected as not fraudulent but in reality are also not fraudulent.
 Total number of False Negative (FN) are  the transactions detected as  not fraudulent  but in reality are fraudulent .
@@ -54,6 +56,21 @@ Total number of True Positives (TP)  are the  transaction detected as   fraudule
 
 
 ```{r partition-data, eval=TRUE}
+if(!require(caret))  install.packages("caret")
+if(!require(class))  install.packages("class")
+if(!require(e1071))  install.packages("e1071")
+if(!require(ROCR))  install.packages("ROCR")
+if(!require(dplyr))  install.packages("dplyr")
+
+if(!require(ggplot2))  install.packages("ggplot2")
+if(!require(readr))  install.packages("readr")
+if(!require(pROC))  install.packages("pROC")
+if(!require(randomForest))  install.packages("randomForest")
+if(!require(corrplot))  install.packages("corrplot")
+if(!require(data.table))  install.packages("data.table")
+if(!require(rpart))  install.packages("rpart")
+if(!require(stringr))  install.packages("stringr")
+if(!require(tidyverse))  install.packages("tidyverse")
 
 library(caret)
 library(class)

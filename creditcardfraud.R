@@ -13,6 +13,22 @@
 
 #############################################################################
 
+if(!require(caret))  install.packages("caret")
+if(!require(class))  install.packages("class")
+if(!require(e1071))  install.packages("e1071")
+if(!require(ROCR))  install.packages("ROCR")
+if(!require(dplyr))  install.packages("dplyr")
+
+if(!require(ggplot2))  install.packages("ggplot2")
+if(!require(readr))  install.packages("readr")
+if(!require(pROC))  install.packages("pROC")
+if(!require(randomForest))  install.packages("randomForest")
+if(!require(corrplot))  install.packages("corrplot")
+if(!require(data.table))  install.packages("data.table")
+if(!require(rpart))  install.packages("rpart")
+if(!require(stringr))  install.packages("stringr")
+if(!require(tidyverse))  install.packages("tidyverse")
+
 
 library(caret)
 library(class)

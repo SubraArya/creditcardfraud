@@ -1,7 +1,7 @@
 ---
 title: "HarvardX: PH125.9x Data Science  \n   Choose your own Project"
 author: "Subrahmanyam  Aryasomayajula"
-date: "October 6, 2022"
+date: "October 9, 2022"
 output: pdf_document
 ---
 
@@ -15,14 +15,16 @@ knitr::opts_chunk$set(echo = TRUE , warning = FALSE, message = FALSE)
 ### Introduction
 
 Credit Card Fraud detection  project is done as a part of Choose your Own (CYO) Data Science Project , HarvardX: PH125.9x.
-In the project we have obtained creditcard.csv data from kaggle dataset . The data has been inspected and models
-have been applied to evaluate them for the accuracy of predicting the faults in the creditcard data set .
-This course also  refers to and draws in on the knowledge developed as a part of 
-"Data Science professional certificate program"  by Harvardx.
+In the project we have obtained creditcard.csv data from kaggle dataset . The dataset has been hosted in github along with other
+project files in order to facilitate easy execution of the code .The data has been inspected and machine learning models
+have been applied to evaluate them for the accuracy of predicting the faults in the credit card data set .We are trying to identify 
+the machine learning model which gives the best accuracy out of the models we applied .This course also  refers to and draws 
+in on the knowledge developed as a part of  "Data Science professional certificate program"  by Harvardx.
 
 
 ###  Overview 
-In this project we evaluate  K-Nearest Neighbors , Naive Bayes classifying algorithms, Random Forest  models. Models have been trained 
+The aim of this project is to evaluate  K-Nearest Neighbors , Naive Bayes classifying algorithms, Random Forest  algorithm and determine 
+which algorithm results in highest accuracy in detecting the fraud in credit card transactions. Models have been trained 
 and tested on the the Credit Card Fraud Detection data set to  discover the highest accuracy model between the three models. 
 The credit card transactions data set obtained from the kaggle  has been randomly sampled to obtain a subset of the data . 
 The data has been further divided into training and test data sets to  build a training model and test the data .
@@ -38,15 +40,16 @@ three models .
 confusion matrix measures the following four values:
 
 
-                           **Actually Negactive(0)       Actually Positive (1) **
-**Predicted Negative (0)**     True  Negative (TN)       False  Negative (FN)               
-**Predicted Positive (1)**     False  Positive (FP)      True  Positive  (TP)
-
+tab <- matrix(c('True  Negative (TN)', 'False  Negative (FN)', 'False  Positive (FP)', 'True  Positive  (TP)' ), ncol=2, byrow=TRUE)
+colnames(tab) <- c('Actually Negactive(0)','Actually Positive (1)')
+rownames(tab) <- c('Predicted Negative (0)','Predicted Positive (1)')
+tab <- as.table(tab)
+tab
 
 Total number of  True Negative (TN) are the transaction detected as not fraudulent but in reality are also not fraudulent.
 Total number of False Negative (FN) are  the transactions detected as  not fraudulent  but in reality are fraudulent .
-Total number of False Positive (FP) are the transaction detected as fradulent  but are  not fraudulent in reality .
-Total number of True Positives (TP)  are the  transaction detected as   fradulent   and really are fraudulent .
+Total number of False Positive (FP) are the transaction detected as fraudulent  but are  not fraudulent in reality .
+Total number of True Positives (TP)  are the  transaction detected as   fraudulent   and really are fraudulent .
 
 
 
@@ -73,11 +76,10 @@ library(knitr)
 
 tinytex::install_tinytex(force = TRUE)
 
-dir = getwd()
 
 dir = getwd()
 
-download.file("https://github.com/nsethi31/Kaggle-Data-Credit-Card-Fraud-Detection/raw/master/creditcard.csv","./creditcard.csv" )
+download.file("https://raw.githubusercontent.com/SubraArya/creditcardfraud/main/creditcard.csv","./creditcard.csv" )
 
 filename = paste(dir , "/creditcard.csv",sep ="")
 
@@ -88,8 +90,9 @@ credit <- read.csv(filename)
 ```
 
 
+#Methods Data Exploration and analysis
 
-#column names , types and sample records examined.
+#Basic structure of the record such as column names , types and sample records examined.
 
 ```{r , EVAL = TRUE}
 str(credit)
@@ -102,18 +105,17 @@ str(credit)
 dim(credit)
 ```
 
-#[1] 284807     31
 
 
 
 
-#factor transformation was on variable class .: 
+# factor transformation was on variable class .: 
 
 ```{r , EVAL = TRUE}
 credit$Class <- factor(credit$Class)
 ```
 
-#Summary stats  on every columns on the dataframe .
+# Summary stats  on every columns on the dataframe .
 
 ```{r , EVAL = TRUE}
 summary(credit)
@@ -121,13 +123,47 @@ summary(credit)
 ```
 
 
-#Top 5 records
+# Top 5 records
 
 ```{r , EVAL = TRUE}
 head(credit)
 ```
 
-###  Dataset preparation
+
+
+
+# Methods Insights into Total number of Fraud and Non-Fraud Rows in data
+
+
+
+```{r , EVAL = TRUE}
+
+rowsTotal <- nrow(credit)
+fraudRowsTotal <- nrow(credit[credit$Class == 1,])
+nonFraudRowsTotal <- rowsTotal - fraudRowsTotal
+
+fraudRowsTotal
+nonFraudRowsTotal
+rowsTotal
+
+
+```
+
+
+a.
+There is high skewness in the data. The number of fraudulent transactions are very less as compared to non fradulent (good) transactions, 
+comprising of only `r fraudRowsTotal` frauds out of `r rowsTotal` transactions (`r fraudRowsTotal*100/rowsTotal`% of the data set). 
+The skewness in the data is expected  as the number of fraudulent transactions  are generally less compared to good transactions.
+
+b.
+The data set consists of numerical values of 28 PCA transformed features, V1 - V28 , time , amount and class fields. 
+Further, no metadata about the original features is provided. class fields with value 0 are non fraudulent (good)  transactions and 
+class fields with value 1 are fraudulent transactions.
+
+
+
+
+#  Methods , Dataset preparation
 
 
 
@@ -148,10 +184,15 @@ credit <- credit[samp, ]
 
 ```
 
+Total number of records in the sample `r nrow(credit)`
 ```{r , EVAL = TRUE}
 
 nrow(credit)
 ```
+
+Partition the sample data into training and test data sets.Training data Set 75% of sample and
+Test data set 25% of sample.
+
 
 ```{r , EVAL = TRUE}
 
@@ -159,32 +200,48 @@ index <- createDataPartition(credit$Class, p = 0.75, list = F)
 
 ```
 
-Training data Set 75% of sample
+ 
 
 ```{r , EVAL = TRUE}
 train <- credit[index, ]
+
 ```
 
 ```{r , EVAL = TRUE}
 nrow(train)
 ```
 
+Total number of records in Training data Set in the sample  is `r nrow(train)` which is 75% of sample .
 
-Test data set 25% of sample
+
 
 ```{r , EVAL = TRUE}
 test <- credit[-index, ]
 nrow(test)
 ```
 
+Total number of records in Test data Set in the sample  is `r nrow(test)` which is 25% of sample .
+
+
+# Methods
+
+WE have applied K-Nearest Neighbors ,Naive Bayes , Random Forest algorithms on credit card dataset . Models have been trained 
+and tested on the the Credit Card Fraud Detection data set to  discover the highest accuracy model between the three models.
 
 # K-Nearest Neighbors
-The k-nearest neighbors algorithm, also known as KNN or k-NN, is a non-parametric, supervised learning classifier, which uses proximity to make classifications or predictions about the grouping of an individual data point. It can be used for either regression or classification problems,
+The k-nearest neighbors algorithm, also known as KNN or k-NN, is a non-parametric, supervised learning classifier, which uses proximity
+to make classifications or predictions about the grouping of an individual data point. It can be used for either regression or classification problems,
 it is typically used as a classification algorithm, working off the assumption that similar points can be found near one another.
-In order to determine which data points are closest to a given query point, the distance between the query point and the other data points will need to be calculated. These distance metrics help to form decision boundaries, which partitions query points into different regions.
+For us to determine which data points are closest to a given query point, the distance between the query point and the other data points
+need to be calculated. These distance metrics help to form decision boundaries, which partitions query points into different regions.
 Euclidean distance,Manhattan distance,Minkowski distance ,Hamming distance  are various ways of measuring the distance.
 
-The k value in the k-NN algorithm defines how many neighbors will be checked to determine the classification of a specific query point. For example, if k=1, the instance will be assigned to the same class as its single nearest neighbor. Defining k can be a balancing act as different values can lead to overfitting or underfitting. Lower values of k can have high variance, but low bias, and larger values of k may lead to high bias and lower variance. The choice of k will largely depend on the input data as data with more outliers or noise will likely perform better with higher values of k. Overall, it is recommended to have an odd number for k to avoid ties in classification, and cross-validation tactics can help you choose the optimal k for your dataset.
+The k value in the k-NN algorithm defines how many neighbors will be checked to determine the classification of a specific query point.
+For example, if k=1, the instance will be assigned to the same class as its single nearest neighbor. Defining k can be a balancing act 
+as different values can lead to overfitting or underfitting. Lower values of k can have high variance, but low bias, and larger values 
+of k may lead to high bias and lower variance. The choice of k will largely depend on the input data as data with more outliers or noise
+will likely perform better with higher values of k.  odd number for k is preferred to avoid ties in classification, and cross-validation
+techniques can help us choose the optimal k for our dataset.
 
 
 In our credit card fraud detection data set ,as all the variables were of class either "numeric" or "integer" ,
@@ -200,34 +257,25 @@ cmknn
 ```
 
 
-In Model the number of nearest neighbours was set to 5.
-`r cmknn$overall["Accuracy"]*100`%  Accuracy in prediction was acheived as per the above confusion matrix .
-Out of a total `r nrow(test)` test cases , 
 
-
-Total number of  True Negative (TN) are   `r cmknn$table[1,1] `   the transaction detected as not fraudulent but in reality are also not fraudulent.
-Total number of False Negative (FN) are   `r cmknn$table[1,2] `   the transactions detected as  not fraudulent  but in reality are fraudulent .
-Total number of False Positive (FP) are   `r cmknn$table[2,1] `   the transaction detected as fradulent  but are  not fraudulent in reality .
-Total number of True Positives (TP) are   `r cmknn$table[2,2] `   the  transaction detected as   fradulent   and really are fraudulent .
-
-
-
-
-Although `r cmknn$overall["Accuracy"]*100`%   accuracy was obtained with the specified index of k = 5 , there are still some  shortcomings as seen
-from   "confusionMatrix" output .The model has not predicted any True Postive cases as illustrated by the  class = 1 , prediction is 0 .
 
 
 # Naive Bayes
 
-Naive Bayes is a simple technique for constructing classifiers: models that assign class labels to problem instances, represented as vectors of feature values, where the class labels are drawn from some finite set. There is not a single algorithm for training such classifiers, but a family of algorithms based on a common principle: all naive Bayes classifiers assume that the value of a particular feature is independent of the value of any other feature, given the class variable.
+Naive Bayes is a simple technique for constructing classifier ie  models that assign class labels to problem instances,
+it is represented as vectors of feature values, where the class labels are drawn from a finite set.  It is a family 
+of algorithms training such classifiers , algorithms are  based on a common principle: all naive Bayes classifiers assume
+that the value of a particular feature is independent of the value of any other feature, given the class variable.
 
-The Naive Bayes classification algorithm is a probabilistic classifier. It is based on probability models that incorporate strong independence assumptions.The independence assumptions often do not have an impact on reality. Therefore they are considered as naive.
+The Naive Bayes classification algorithm is a probabilistic classifier. It is based on probability models that incorporate
+strong independence assumptions.The independence assumptions often do not have an impact on reality that is why they are considered as naive.
 
-We can derive probability models by using Bayes' theorem . Depending on the nature of the probability model, we can train the Naive Bayes algorithm in a supervised learning setting.
+We can derive probability models by using Bayes' theorem . Depending on the nature of the probability model,
+we can train the Naive Bayes algorithm in a supervised learning setting.
 
 A Naive Bayes model consists of a large cube that includes the following dimensions:
 Input field value for discrete fields, or input field value range for continuous fields.
-Continuous fields are divided into discrete bins by the Naive Bayes algorithm
+Continuous fields are divided into discrete bins by the Naive Bayes algorithm.
 
 Target field value ,means that a Naive Bayes model records how often a target field value appears together with a value of an input field.
 
@@ -246,31 +294,20 @@ cmnb
 ```
 
 
-`r cmnb$overall["Accuracy"]*100`%  Accuracy in prediction was acheived as per the above confusion matrix .
-Out of a total `r nrow(test)` test cases , 
-
-Total number of  True Negative (TN) are `r cmnb$table[1,1] `  the transaction detected as not fraudulent but in reality are also not fraudulent.
-Total number of False Negative (FN) are `r cmnb$table[1,2] `  the transactions detected as  not fraudulent  but in reality are fraudulent .
-Total number of False Positive (FP) are `r cmnb$table[2,1] `  the transaction detected as fradulent  but are  not fraudulent in reality .
-Total number of True Positives (TP)  are `r cmnb$table[2,2]`  the  transaction detected as   fradulent   and really are fraudulent .
-
-
-
-Naive Bayes is under performing for this set .
-
-
-
-Naive Bayes is an underperforming algorithm in comparison with knn  as we can see the accuracy is `r cmnb$overall["Accuracy"]*100`%   with Naive Bayes Vs 
-`r cmknn$overall["Accuracy"]*100`%   for K Nearest  neighbours .
 
 
 
 
 # Build the Model with the Random Forest with decision trees set to 40.
 
-Random forest, like its name implies, consists of a large number of individual decision trees that operate as an ensemble. Each individual tree in the random forest spits out a class prediction and the class with the most votes becomes our model’s prediction.
-The fundamental idea behind random forests is that a large number of relatively uncorrelated models (trees) operating as a committee will outperform any of the individual constituent models .The low correlation between models is the key  .
-uncorrelated models can produce ensemble predictions that are more accurate than any of the individual predictions. The reason for this positive effect is that the trees protect each other from their individual errors . While some trees may be wrong, many other trees will be right, so as a group the trees are able to move in the correct direction.
+Random forest consists of a large number of individual decision trees that operate as an
+ensemble. Each individual tree in the random forest spits out a class prediction and the class with the most votes 
+becomes our model’s prediction.The fundamental idea behind random forests is that a large number of relatively 
+uncorrelated models (trees) operating as a committee will outperform any of the individual constituent models .
+The low correlation between models is the key  .uncorrelated models can produce ensemble predictions that are more
+accurate than any of the individual predictions. The reason for this positive effect is that the trees protect 
+each other from their individual errors . While some trees may be wrong, many other trees will be right, so as 
+a group the trees are able to move in the correct direction.
 
 For our credit card data set we have used number of decision trees to 40.
 
@@ -286,14 +323,50 @@ cmrf
 
 
 
-`r cmrf$overall["Accuracy"]*100`%  Accuracy in prediction was acheived as per the above confusion matrix .
+
+
+# Results
+
+# K-Nearest Neighbors
+
+In Model the number of nearest neighbors was set to 5.
+`r cmknn$overall["Accuracy"]*100`%  Accuracy in prediction was acheived as per the above confusion matrix .
+Out of a total `r nrow(test)` test cases , 
+Total number of  True Negative (TN) are   `r cmknn$table[1,1] `   the transaction detected as not fraudulent but in reality are also not fraudulent.
+Total number of False Negative (FN) are   `r cmknn$table[1,2] `   the transactions detected as  not fraudulent  but in reality are fraudulent .
+Total number of False Positive (FP) are   `r cmknn$table[2,1] `   the transaction detected as fraudulent  but are  not fraudulent in reality .
+Total number of True Positives (TP) are   `r cmknn$table[2,2] `   the  transaction detected as   fraudulent   and really are fraudulent .
+
+Although `r cmknn$overall["Accuracy"]*100`%   accuracy was obtained with the specified index of k = 5 , there are still some  shortcomings as seen
+from   "confusionMatrix" output .The model has not predicted any True Postive cases as illustrated by the  class = 1 , prediction is 0 .
+
+
+# Naive Baiyes 
+
+`r cmnb$overall["Accuracy"]*100`%  Accuracy in prediction was achieved as per the above confusion matrix .
+Out of a total `r nrow(test)` test cases , 
+
+Total number of  True Negative (TN) are `r cmnb$table[1,1] `  the transaction detected as not fraudulent but in reality are also not fraudulent.
+Total number of False Negative (FN) are `r cmnb$table[1,2] `  the transactions detected as  not fraudulent  but in reality are fraudulent .
+Total number of False Positive (FP) are `r cmnb$table[2,1] `  the transaction detected as fradulent  but are  not fraudulent in reality .
+Total number of True Positives (TP)  are `r cmnb$table[2,2]`  the  transaction detected as   fradulent   and really are fraudulent .
+
+Naive Bayes is under performing for this set .
+
+Naive Bayes is an under performing algorithm in comparison with knn  as we can see the accuracy is `r cmnb$overall["Accuracy"]*100`%   with Naive Bayes Vs 
+`r cmknn$overall["Accuracy"]*100`%   for K Nearest  neighbors .
+
+
+# Random forest
+
+`r cmrf$overall["Accuracy"]*100`%  Accuracy in prediction was achieved as per the above confusion matrix .
 Out of a total `r nrow(test)` test cases , 
 
 
 Total number of  True Negative (TN) are  `r cmrf$table[1,1] `  the transaction detected as not fraudulent but in reality are also not fraudulent.
 Total number of False Negative (FN) are  `r cmrf$table[1,2] `  the transactions detected as  not fraudulent  but in reality are fraudulent .
-Total number of False Positive (FP) are  `r cmrf$table[2,1] `  the transaction detected as fradulent  but are  not fraudulent in reality .
-Total number of True Positives (TP)  are `r cmrf$table[2,2] `  the  transaction detected as   fradulent   and really are fraudulent .
+Total number of False Positive (FP) are  `r cmrf$table[2,1] `  the transaction detected as fraudulent  but are  not fraudulent in reality .
+Total number of True Positives (TP)  are `r cmrf$table[2,2] `  the  transaction detected as   fraudulent   and really are fraudulent .
 
 
 

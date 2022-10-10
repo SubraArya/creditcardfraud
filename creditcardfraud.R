@@ -1,7 +1,7 @@
 #############################################################################
 # title: "HarvardX: PH125.9x Data Science  \n   Choose your own Project"
 # author: "Subrahmanyam  Aryasomayajula"
-# date: "October 6, 2022"
+# date: "October 9, 2022"
 
 # Description :
 # Credit Card Fraud detection  project is done as a part of Choose your Own (CYO) Data Science Project , HarvardX: PH125.9x.
@@ -33,7 +33,7 @@ library(tidyverse)
 
 dir = getwd()
 
-download.file("https://github.com/nsethi31/Kaggle-Data-Credit-Card-Fraud-Detection/raw/master/creditcard.csv","./creditcard.csv" )
+download.file("https://raw.githubusercontent.com/SubraArya/creditcardfraud/main/creditcard.csv","./creditcard.csv" )
 
 filename = paste(dir , "/creditcard.csv",sep ="")
 
@@ -64,6 +64,15 @@ summary(credit)
 head(credit)
 
 
+# Total records , fradulent records and non fraudulent records
+rowsTotal <- nrow(credit)
+fraudRowsTotal <- nrow(credit[credit$Class == 1,])
+nonFraudRowsTotal <- rowsTotal - fraudRowsTotal
+fraudRowsTotal
+nonFraudRowsTotal
+rowsTotal
+
+
 ## set seed for random sampling 
 set.seed(2000)
 
@@ -73,7 +82,6 @@ samp <- sample(1:nrow(credit), round(0.2*nrow(credit)))
 credit <- credit[samp, ]
 
 nrow(credit)
-## 56961 records in sample
 
 index <- createDataPartition(credit$Class, p = 0.75, list = F)
 
@@ -81,12 +89,10 @@ index <- createDataPartition(credit$Class, p = 0.75, list = F)
 train <- credit[index, ]
 
 nrow(train)
-## 42722  rows
 
 ## Test data set 25% of sample
 test <- credit[-index, ]
 nrow(test)
-## 14239  rows
 
 knn1 <- knn(train = train[,-31], test = test[,-31], cl = train$Class, k = 5)
 
